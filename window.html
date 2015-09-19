@@ -10,14 +10,11 @@
   <div class="container">
     <h1>ScrpMonitor</h1>
     <div class="dropdown">
-      <button class="btn btn-default dropdown-toggle" type="button" id="serialports" data-toggle="dropdown">
+      <button class="btn btn-default dropdown-toggle" type="button" id="serialports_button" data-toggle="dropdown">
         シリアルポートを選択して下さい...
         <span class="caret"></span>
       </button>
-      <ul class="dropdown-menu" role="menu" aria-labelledby="serialports">
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">hogehoge</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">fugafuga</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">piyopiyo</a></li>
+      <ul class="dropdown-menu" role="menu" aria-labelledby="serialports_button" id="serialports">
       </ul>
       <button type="button" class="btn" id="update">更新</button>
       <button type="button" class="btn btn-primary" id="connect">接続</button>

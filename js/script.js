@@ -1,12 +1,3 @@
-$(function(){
-  $(".dropdown-menu li a").click(function(){
-    $(this).parents('.dropdown').find('.dropdown-toggle').html($(this).text() + ' <span class="caret"></span>');
-    $(this).parents('.dropdown').find('input[name="dropdown-value"]').val($(this).attr("data-value"));
-  });
-
-
-});
-
 $( document ).ready( function() {
   var tbody = $( "tbody" );
   var offsetWidth = tbody.prop( "offsetWidth" );
@@ -15,8 +6,20 @@ $( document ).ready( function() {
   var thead = $( "thead" );
   thead.width( thead.width() - scrollbarWidth );
   hideshowcol();
+  updateDevices();
+});
+$("#update").click(function(){
+  $("#serialports").empty();
+  $("#serialports_button").html("シリアルポートを選択して下さい...");
+  selected = "";
+  updateDevices();
 });
 
+var selected = "";
+
+$("#connect").click(function(){
+  console.log(selected);
+})
 $("#separate_data").click(function(){
   hideshowcol();
 });
@@ -47,5 +50,18 @@ function syncCheckAndReadonly(check_obj, ro_obj){
     }else{
       ro_obj.removeAttr("readonly");
     }
+  });
+}
+
+function updateDevices(){
+  chrome.serial.getDevices(function(devices){
+    devices.forEach(function(port){
+      $("#serialports").append("<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"#\" id=\"" + port.path + "\" data-value=\"" + port.path + "\">" + port.path + "</a></li>");
+      $(document).on("click", "#"+port.path, function(){
+        $(this).parents('.dropdown').find('.dropdown-toggle').html($(this).text() + ' <span class="caret"></span>');
+        selected = $(this).attr("data-value");
+        // $(this).parents('.dropdown').find('input[name="dropdown-value"]').val($(this).attr("data-value"));
+      });
+    });
   });
 }
