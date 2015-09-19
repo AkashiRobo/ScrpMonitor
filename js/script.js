@@ -16,10 +16,31 @@ $("#update").click(function(){
 });
 
 var selected = "";
-
+var connectionId;
+var connecting = false;
 $("#connect").click(function(){
-  console.log(selected);
-})
+  if(connecting === false){
+    chrome.serial.connect(selected, {bitrate: 115200}, function(connectionInfo){
+      connectionId = connectionInfo.connectionId;
+      $("#connect").removeClass("btn-primary");
+      $("#connect").addClass("btn-danger");
+      $("#connect").html("切断");
+      $("#serialports_button").attr("disabled", true);
+      $("#update").attr("disabled", true);
+      connecting = true;
+      console.log(connectionId);
+    });
+  }else{
+    chrome.serial.disconnect(connectionId, function(){
+      $("#connect").removeClass("btn-danger");
+      $("#connect").addClass("btn-primary");
+      $("#connect").html("接続");
+      $("#serialports_button").removeAttr("disabled");
+      $("#update").removeAttr("disabled");
+      connecting = false;
+    });
+  }
+});
 $("#separate_data").click(function(){
   hideshowcol();
 });
