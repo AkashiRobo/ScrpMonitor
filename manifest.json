@@ -1,0 +1,14 @@
+{
+  "manifest_version": 2,
+  "name": "ScrpMonitor4Chrome",
+  "description": "ScrpMonitor4Chrome",
+  "version": "1.0",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "permissions": [
+     "serial"
+  ]
+}
