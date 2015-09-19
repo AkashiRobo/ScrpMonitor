@@ -1,6 +1,39 @@
+* {
+  color: navy;
+}
 body{
   width: 800px;
   height: 600px;
   overflow-x: hidden;
   background-color: AliceBlue;
+}
+h1{
+  font-size: 32px;
+}
+h2{
+  font-size: 24px;
+}
+/*テーブル*/
+thead,tbody{
+  display:block;
+}
+th,td{
+  width: 130px;
+}
+#sendTable{
+  border: 2px;
+}
+#sendTable td{
+  padding-right: 8px;
+}
+#logTable tbody{
+  overflow-y:scroll;
+  height:360px;
+}
+/*リスト*/
+#serialports{
+  width: 250px;
+}
+.content{
+  margin-top: 12px;
 }
