@@ -44,6 +44,52 @@ $("#connect").click(function(){
 $("#separate_data").click(function(){
   hideshowcol();
 });
+$("#send").click(function(){
+  var ary = new Uint8Array(7);
+  var dmy = 0xff;
+  var stx = 0x41;
+  var cmd, data1, data2;
+
+  if($("#broadcast").is(":checked") === true){
+    id = 0xff;
+  }else{
+    id = parseInt($("#id").val());
+  }
+  if($("#emergency").is(":checked") === true){
+    cmd = 0xff;
+  }else{
+    cmd = parseInt($("#cmd").val());
+  }
+  if($("#separate_data").is(":checked") === true){
+    data1 = parseInt($("#data1").val());
+    data2 = parseInt($("#data2").val());
+  }else{
+    var data = parseInt($("#data").val());
+    data1 = data & 0xff;
+    data2 = data >>> 8;
+  }
+  var sum = (id + cmd + data1 + data2) & 0xff;
+  ary[0] = dmy;
+  ary[1] = stx;
+  ary[2] = id;
+  ary[3] = cmd;
+  ary[4] = data1;
+  ary[5] = data2;
+  ary[6] = sum;
+  chrome.serial.send(connectionId, ary.buffer, function(){
+    
+  });
+});
+
+function convertArrayBufferToString(buf){
+  var bufView = new Uint8Array(buf);
+  var encodedString = String.fromCharCode.apply(null, bufView);
+  return decodeURIComponent(escape(encodedString));
+}
+
+chrome.serial.onReceive.addListener(function(info){
+
+});
 
 syncCheckAndReadonly($("#broadcast"), $("#id"));
 syncCheckAndReadonly($("#emergency"), $("#cmd"));
@@ -77,12 +123,17 @@ function syncCheckAndReadonly(check_obj, ro_obj){
 function updateDevices(){
   chrome.serial.getDevices(function(devices){
     devices.forEach(function(port){
-      $("#serialports").append("<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"#\" id=\"" + port.path + "\" data-value=\"" + port.path + "\">" + port.path + "</a></li>");
-      $(document).on("click", "#"+port.path, function(){
+      var path = escape(port.path);
+      $("#serialports").append("<li role=\"presentation\"><a role=\"menuitem\" tabindex=\"-1\" href=\"#\" id=\"" + path + "\" data-value=\"" + port.path + "\">" + port.path + "</a></li>");
+      $(document).on("click", "#"+path, function(){
         $(this).parents('.dropdown').find('.dropdown-toggle').html($(this).text() + ' <span class="caret"></span>');
         selected = $(this).attr("data-value");
-        // $(this).parents('.dropdown').find('input[name="dropdown-value"]').val($(this).attr("data-value"));
+        $(this).parents('.dropdown').find('input[name="dropdown-value"]').val($(this).attr("data-value"));
       });
     });
   });
+}
+
+function escape(val){
+    return val.replace(/[ !"#$%&'()*+,.\/:;<=>?@\[\\\]^`{|}~]/g, '');
 }
