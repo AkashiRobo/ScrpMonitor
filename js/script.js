@@ -7,6 +7,7 @@ $( document ).ready( function() {
   thead.width( thead.width() - scrollbarWidth );
   hideshowcol();
   updateDevices();
+  $("#send").attr("disabled", true);
 });
 $("#update").click(function(){
   $("#serialports").empty();
@@ -14,7 +15,7 @@ $("#update").click(function(){
   selected = "";
   updateDevices();
 });
-
+var count = 0;
 var selected = "";
 var connectionId;
 var connecting = false;
@@ -28,7 +29,7 @@ $("#connect").click(function(){
       $("#serialports_button").attr("disabled", true);
       $("#update").attr("disabled", true);
       connecting = true;
-      console.log(connectionId);
+      $("#send").removeAttr("disabled");
     });
   }else{
     chrome.serial.disconnect(connectionId, function(){
@@ -37,6 +38,7 @@ $("#connect").click(function(){
       $("#connect").html("接続");
       $("#serialports_button").removeAttr("disabled");
       $("#update").removeAttr("disabled");
+      $("#send").attr("disabled", true);
       connecting = false;
     });
   }
@@ -48,7 +50,7 @@ $("#send").click(function(){
   var ary = new Uint8Array(7);
   var dmy = 0xff;
   var stx = 0x41;
-  var cmd, data1, data2;
+  var cmd, data1, data2, data;
 
   if($("#broadcast").is(":checked") === true){
     id = 0xff;
@@ -63,8 +65,9 @@ $("#send").click(function(){
   if($("#separate_data").is(":checked") === true){
     data1 = parseInt($("#data1").val());
     data2 = parseInt($("#data2").val());
+    data  = data1 + (data2 << 8);
   }else{
-    var data = parseInt($("#data").val());
+    data = parseInt($("#data").val());
     data1 = data & 0xff;
     data2 = data >>> 8;
   }
@@ -77,7 +80,7 @@ $("#send").click(function(){
   ary[5] = data2;
   ary[6] = sum;
   chrome.serial.send(connectionId, ary.buffer, function(){
-    
+    $('#logTable tbody').prepend("<tr class=\"info\"><td>"+ (++count) +"</td><td>"+id+"</td><td>"+cmd+"</td><td>"+data1+"</td><td>"+data2+"</td><td>"+data+"</td></tr>");
   });
 });
 

@@ -28,12 +28,12 @@ th,td{
 }
 #logTable tbody{
   overflow-y:scroll;
-  height:360px;
+  height:100px;
 }
 /*リスト*/
 #serialports{
   width: 250px;
 }
 .content{
-  margin-top: 12px;
+  margin-top: 0px;
 }
