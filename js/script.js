@@ -15,6 +15,7 @@ $("#update").click(function(){
   selected = "";
   updateDevices();
 });
+
 var count = 0;
 var selected = "";
 var connectionId;
@@ -84,14 +85,31 @@ $("#send").click(function(){
   });
 });
 
-function convertArrayBufferToString(buf){
-  var bufView = new Uint8Array(buf);
-  var encodedString = String.fromCharCode.apply(null, bufView);
-  return decodeURIComponent(escape(encodedString));
-}
-
+var queue = [];
 chrome.serial.onReceive.addListener(function(info){
-
+  var ary = new Uint8Array(info.data);
+  $.each(ary, function(i, v){
+    queue.push(v);
+  });
+  console.log(queue);
+  while(6 <= queue.length){
+    if(queue.shift() != 0x41){
+      console.log("x_x stx");
+      continue;
+    }
+    var rcv_id = queue.shift();
+    var rcv_cmd = queue.shift();
+    var rcv_data1 = queue.shift();
+    var rcv_data2 = queue.shift();
+    var rcv_sum = queue.shift();
+    var sum = (rcv_id + rcv_cmd + rcv_data1 + rcv_data2) & 0xff;
+    if(sum !== rcv_sum){
+      console.log("x_x sum");
+      continue;
+    }
+    var rcv_data = rcv_data1 + (rcv_data2<<8);
+    $('#logTable tbody').prepend("<tr><td>"+ (++count) +"</td><td>"+rcv_id+"</td><td>"+rcv_cmd+"</td><td>"+rcv_data1+"</td><td>"+rcv_data2+"</td><td>"+rcv_data+"</td></tr>");
+  }
 });
 
 syncCheckAndReadonly($("#broadcast"), $("#id"));
