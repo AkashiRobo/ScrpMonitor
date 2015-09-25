@@ -91,10 +91,8 @@ chrome.serial.onReceive.addListener(function(info){
   $.each(ary, function(i, v){
     queue.push(v);
   });
-  console.log(queue);
   while(6 <= queue.length){
     if(queue.shift() != 0x41){
-      console.log("x_x stx");
       continue;
     }
     var rcv_id = queue.shift();
@@ -104,7 +102,6 @@ chrome.serial.onReceive.addListener(function(info){
     var rcv_sum = queue.shift();
     var sum = (rcv_id + rcv_cmd + rcv_data1 + rcv_data2) & 0xff;
     if(sum !== rcv_sum){
-      console.log("x_x sum");
       continue;
     }
     var rcv_data = rcv_data1 + (rcv_data2<<8);
