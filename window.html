@@ -14,7 +14,7 @@
         シリアルポートを選択して下さい...
         <span class="caret"></span>
       </button>
-      <ul class="dropdown-menu" role="menu" aria-labelledby="serialports_button" id="serialports">
+      <ul class="dropdown-menu port" role="menu" aria-labelledby="serialports_button" id="serialports">
       </ul>
       <button type="button" class="btn" id="update">更新</button>
       <button type="button" class="btn btn-primary" id="connect">接続</button>
@@ -22,21 +22,34 @@
     <div class="content">
       <div id="setting">
         <h2>設定</h2>
+        <div class="dropdown">
+          <td>ボーレート</td>
+          <button class="btn btn-default dropdown-toggle" type="button" id="baudrate_button" data-toggle="dropdown">
+            115200
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu baud" role="menu" aria-labelledby="baudrate_button" id="baudrate">
+          </ul>
+        </div>
+        <!--
         <div class="checkbox">
           <label>
             <input type="checkbox" id="clear_field">送信後にテキストフィールドをクリアする
           </label>
         </div>
+        -->
         <div class="checkbox">
           <label>
             <input type="checkbox" id="separate_data">DATA1とDATA2を別々に入力する
           </label>
         </div>
+        <!--
         <div class="checkbox">
           <label>
             <input type="checkbox" id="rede_enable">RE/DEを有効にする
           </label>
         </div>
+        -->
       </div>
       <div>
         <h2>送信データ</h2>
@@ -73,7 +86,13 @@
       </div>
     </div>
     <div class="content">
-      <h2>受信データ</h2>
+      <table class="receive_title">
+        <tr>
+          <td><h2>受信データ</h2></td>
+          <td class="w"><div class="checkbox"><label><input type="checkbox" id="sign_set">DATAを符号なし整数で表示する</label></div></td>
+          <td><button type="button" class="btn2" id="clear_text"><font size="2">データをクリア</font></button></td>
+        </tr>
+      </table>
       <table class="table table-condensed" id="logTable">
         <thead>
           <tr>
@@ -89,6 +108,38 @@
         </tbody>
       </table>
     </div>
+  </div>
+  <div class="clear_button">
+    <div class="checkbox"><label><input type="checkbox" id="clear_send">テキストの自動クリア</label></div>
+  </div>
+  <div class="serial_sender">
+    <td>シリアル送信</td>
+    <table><tr>
+      <td class="send_input"><input type="text" class="form-control input-group-sm send_data_input" id="send_data"></td>
+      <td><button type="button" class="btn btn-primary btn-sm btn3" id="serial_send">送信</button></td>
+    </tr></table>
+  </div>
+  <div class="line_button">
+    <table><tr>
+      <td class="line">改行コード　</td>
+      <td class="line"><div class="checkbox"><label><input type="checkbox" id="cr">CR　</label></div></td>
+      <td class="line"><div class="checkbox"><label><input type="checkbox" id="lf">LF</label></div></td>
+    </tr></table>
+  </div>
+  <div class="serialMonitor">
+    <tr>
+      <td>シリアルモニタ</td>
+      <td><button type="button" class="btn1" id="clear"><font size="2">表示をクリア</font></button></td>
+    </tr>
+    <table class="table table-condensed" id="monitor">
+      <tbody id="monitor_data">
+      </tbody>
+    </table>
+  </div>
+  <div class="scroll_button">
+    <div class="checkbox"><label><input type="checkbox" id="scroll_v">縦自動スクロール</label></div>
+    <div class="checkbox"><label><input type="checkbox" id="scroll_h">横自動スクロール</label></div>
+    <div class="checkbox"><label><input type="checkbox" id="timestamp">タイムスタンプを<br>表示</label></div>
   </div>
   <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>

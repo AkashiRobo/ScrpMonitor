@@ -4,6 +4,8 @@
 body{
   width: 800px;
   height: 600px;
+  margin:0px;
+  padding:0px;
   overflow-x: hidden;
   background-color: AliceBlue;
 }
@@ -20,7 +22,30 @@ thead,tbody{
 th,td{
   width: 130px;
 }
-#sendTable{
+td.w{
+  width: 260px;
+}
+td.line{
+  width: auto;
+}
+ul.port{
+  width: auto;
+  max-height: 400px;
+  overflow-y: auto;
+}
+ul.baud{
+  width: auto;
+  max-height: 350px;
+  overflow-y: auto;
+}
+a.others{
+  border: 2px solid white;
+  height: 28px;
+}
+a.highlight{
+  border: 2px solid red;
+  height: 28px;
+}#sendTable{
   border: 2px;
 }
 #sendTable td{
@@ -29,6 +54,68 @@ th,td{
 #logTable tbody{
   overflow-y:scroll;
   height:100px;
+}
+#monitor tbody{
+  border: 1px solid black;
+  background-color: white;
+  overflow-y:auto;
+  overflow-x:auto;
+  height:140px;
+  width: 470px;
+}
+input.send_data_input{
+  height: 30px;
+  width: 280px;
+}
+button.btn1{
+  margin: 0px;
+  height: 22px;
+  padding-top: 0px;
+}
+button.btn2{
+  height: 24px;
+}
+button.btn3{
+  height: 30px;
+}
+div.serialMonitor{
+  z-index: 10;
+  position:absolute;
+  width:470px;
+  height:140px;
+  top:110px;
+  left:290px;
+}
+div.scroll_button{
+  position: absolute;
+  width:135px;
+  height:40px;
+  top:265px;
+  left:625px;
+}
+div.serial_sender{
+  z-index: 10;
+  position: absolute;
+  width:300px;
+  height:20px;
+  top:47px;
+  left:430px;
+}
+div.line_button{
+  z-index: 20;
+  position: absolute;
+  width: 200px;
+  height: 20px;
+  top: 90px;
+  left: 575px;
+}
+div.clear_button{
+  z-index: 20;
+  position: absolute;
+  width: 200px;
+  height: 40px;
+  top: 36px;
+  left: 530px;
 }
 /*リスト*/
 #serialports{
