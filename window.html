@@ -122,7 +122,7 @@
   <div class="line_button">
     <table><tr>
       <td class="line">改行コード　</td>
-      <td class="line"><div class="checkbox"><label><input type="checkbox" id="cr">CR　</label></div></td>
+      <td class="line"><div class="checkbox"><label><input type="checkbox" id="cr">CR</label>&emsp;</div></td>
       <td class="line"><div class="checkbox"><label><input type="checkbox" id="lf">LF</label></div></td>
     </tr></table>
   </div>
@@ -139,7 +139,14 @@
   <div class="scroll_button">
     <div class="checkbox"><label><input type="checkbox" id="scroll_v">縦自動スクロール</label></div>
     <div class="checkbox"><label><input type="checkbox" id="scroll_h">横自動スクロール</label></div>
-    <div class="checkbox"><label><input type="checkbox" id="timestamp">タイムスタンプを<br>表示</label></div>
+    <div class="checkbox"><label><input type="checkbox" id="timestamp">タイムスタンプを<br/>表示</label></div>
+    <div>表示形式&ensp;<select id="display">
+      <option value="text">TEXT</option>
+      <option value="hex">HEX</option>
+      <option value="dec">DEC</option>
+      <option value="oct">OCT</option>
+      <option value="bin">BIN</option>
+    </select></div>
   </div>
   <script src="js/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>

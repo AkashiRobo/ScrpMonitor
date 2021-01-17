@@ -94,7 +94,7 @@ div.scroll_button{
   left:625px;
 }
 div.serial_sender{
-  z-index: 10;
+  z-index: 15;
   position: absolute;
   width:300px;
   height:20px;
@@ -102,7 +102,7 @@ div.serial_sender{
   left:430px;
 }
 div.line_button{
-  z-index: 20;
+  z-index: 12;
   position: absolute;
   width: 200px;
   height: 20px;

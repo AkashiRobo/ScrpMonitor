@@ -1,5 +1,5 @@
 $( document ).ready( function() {
-   tbody = $( "tbody" );
+  let tbody = $( "tbody" );
   let offsetWidth = tbody.prop( "offsetWidth" );
   let scrollWidth = tbody.prop( "scrollWidth" );
   let scrollbarWidth = offsetWidth - scrollWidth;
@@ -115,7 +115,7 @@ $("#send").click(function(){
       data2 = parseInt($("#data2").val()) & 0xff;
     }
     data  = (data1 & 0xff) + (data2 << 8);
-    if($("#sign_set").is(":checked") === false && (data2 >>> 7) == 1){//負の数表現
+    if($("#sign_set").is(":checked") === false && (data2 >>> 7) === 1){//負の数表現
       data |= 0xffff0000;
     }
   }else{
@@ -161,48 +161,65 @@ chrome.serial.onReceive.addListener(function(info){
   $.each(ary, function(i, v){
     queue.push(v);//vに受信データが入っている。
     //表示する処理
-    //日本語utf-8にのみ対応
-    if(now === 0){//1バイト目
-      buf[0] = v;
-      now = 1;
-      if(v >>> 5 === 0b110){//2バイト文字  
-        num_bytes = 2;
-      }else if(v >>> 4 === 0b1110){//3バイト文字
-        num_bytes = 3;
-      }else if(v >>> 3 === 0b11110){//4バイト文字
-        num_bytes = 4;
-      }else{//その他　ASCII
-        num_bytes = 1;
+    if($("#display").val() === "text"){
+      //日本語utf-8にのみ対応
+      if(now === 0){//1バイト目
+        buf[0] = v;
+        now = 1;
+        if(v >>> 5 === 0b110){//2バイト文字  
+          num_bytes = 2;
+        }else if(v >>> 4 === 0b1110){//3バイト文字
+          num_bytes = 3;
+        }else if(v >>> 3 === 0b11110){//4バイト文字
+          num_bytes = 4;
+        }else{//その他　ASCII
+          num_bytes = 1;
+        }
+      }else{//２バイト目以降
+        buf[now] = v;
+        if(v >>> 6 === 0b10){
+          now++;
+        }else{//例外処理
+          error = true;
+        }
       }
-    }else{//２バイト目以降
-      buf[now] = v;
-      if(v >>> 6 === 0b10){
-        now++;
-      }else{//例外処理
-        error = true;
+      if(now === num_bytes || error === true){
+        now = 0;
+      }else{
+        return;
       }
-    }
-    if(now === num_bytes || error === true){
-      now = 0;
+      //タイムスタンプの表示
+      if($("#timestamp").is(":checked") === true && new_line === true){
+        const date = new Date;
+        moji = date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"."+date.getMilliseconds()+" ｰ> ";
+        new_line = false
+      }else{
+        moji = "";
+      }
+      moji += (new TextDecoder).decode(buf.slice(0,num_bytes));
+      if(v===10){//改行
+        moji += "<tr></tr>";
+        new_line = true;
+      }else if(v===9){//タブ
+        moji += "<nobr>&#009</nobr>";
+      }else if(v===13){//復帰
+        moji += "<nobr>&#013</nobr>";
+      }
     }else{
-      return;
-    }
-    //タイムスタンプの表示
-    if($("#timestamp").is(":checked") === true && new_line === true){
-      const date = new Date;
-      moji = date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"."+date.getMilliseconds()+" ｰ> ";
-      new_line = false
-    }else{
-      moji = "";
-    }
-    moji += (new TextDecoder).decode(buf.slice(0,num_bytes));
-    if(v==10){//改行
-      moji += "<tr></tr>";
-      new_line = true;
-    }else if(v==9){//タブ
-      moji += "<nobr>&#009</nobr>";
-    }else if(v==13){//復帰
-      moji += "<nobr>&#013</nobr>";
+      switch($("#display").val()){
+        case "hex":
+          moji = v.toString(16).toUpperCase()+" ";
+          break;
+        case "dec":
+          moji = v.toString(10)+" ";
+          break;
+        case "oct":
+          moji = v.toString(8)+" ";
+          break;
+        case "bin":
+          moji = v.toString(2)+" ";
+          break;
+      }
     }
     $("#monitor tbody").append(moji);
     //自動スクロール
@@ -228,7 +245,7 @@ chrome.serial.onReceive.addListener(function(info){
       continue;
     }
     let rcv_data = (rcv_data1 & 0xff) + ((rcv_data2<<8) & 0xff00);
-    if($("#sign_set").is(":checked") === false && (rcv_data2 >>> 7) == 1){//負の数表現
+    if($("#sign_set").is(":checked") === false && (rcv_data2 >>> 7) === 1){//負の数表現
       rcv_data |= 0xffff0000;
     }
     $('#logTable tbody').prepend("<tr><td>"+ (++count) +"</td><td>"+rcv_id+"</td><td>"+rcv_cmd+"</td><td>"+rcv_data1+"</td><td>"+rcv_data2+"</td><td>"+rcv_data+"</td></tr>");
@@ -300,7 +317,7 @@ $("#serialports_button").click(function(){
     let obj = document.getElementById("serialports");
     let list = $("#serialports").offset();
     let element = null;
-    if(selected == "" && find_port != ""){
+    if(selected === "" && find_port != ""){
       //使えそうなやつへスクロールする便利機能。
       element = $("#"+find_port).offset();
     }else{
