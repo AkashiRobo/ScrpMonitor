@@ -158,6 +158,10 @@ let new_line = true;
 chrome.serial.onReceive.addListener(function(info){
   let ary = new Uint8Array(info.data);
   let error = false;
+  if($("#newline").is(":checked") === true){
+    new_line = true;
+    $("#monitor tbody").append("<br/>");
+  }
   $.each(ary, function(i, v){
     queue.push(v);//vに受信データが入っている。
     //表示する処理
@@ -198,7 +202,7 @@ chrome.serial.onReceive.addListener(function(info){
       }
       moji += (new TextDecoder).decode(buf.slice(0,num_bytes));
       if(v===10){//改行
-        moji += "<tr></tr>";
+        moji += "<br/>";
         new_line = true;
       }else if(v===9){//タブ
         moji += "<nobr>&#009</nobr>";
@@ -206,18 +210,26 @@ chrome.serial.onReceive.addListener(function(info){
         moji += "<nobr>&#013</nobr>";
       }
     }else{
+      //タイムスタンプの表示
+      if($("#timestamp").is(":checked") === true && new_line === true){
+        const date = new Date;
+        moji = date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"."+date.getMilliseconds()+" ｰ> ";
+        new_line = false
+      }else{
+        moji = "";
+      }
       switch($("#display").val()){
         case "hex":
-          moji = v.toString(16).toUpperCase()+" ";
+          moji += v.toString(16).toUpperCase()+" ";
           break;
         case "dec":
-          moji = v.toString(10)+" ";
+          moji += v.toString(10)+" ";
           break;
         case "oct":
-          moji = v.toString(8)+" ";
+          moji += v.toString(8)+" ";
           break;
         case "bin":
-          moji = v.toString(2)+" ";
+          moji += v.toString(2)+" ";
           break;
       }
     }
@@ -252,12 +264,28 @@ chrome.serial.onReceive.addListener(function(info){
   }
 });
 
+//text以外での表示の時タイムスタンプの表示にはデータごとの改行が必要。
+function checkNewLine(){
+  if($("#display").val() != "text" && $("#timestamp").is(":checked") === true){
+    $("#newline").prop("checked",true);
+  }
+}
+let display_element = document.getElementById("display");
+display_element.onchange = checkNewLine;
+
+$("#timestamp").click(checkNewLine);
+$("#newline").click(function(){
+  if($("#display").val() != "text" && $("#newline").is(":checked") === false){
+    $("#timestamp").prop("checked",false);
+  }
+});
+
 $("#separate_data").click(function(){
   hideshowcol();
 });
 
 function hideshowcol(){
-  let separate = $("#separate_data").is(':checked');
+  let separate = $("#separate_data").is(":checked");
   if(separate === true){
     $(".data1_col").show();
     $(".data2_col").show();
