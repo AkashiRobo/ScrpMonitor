@@ -143,22 +143,23 @@ $("#send").click(function(){
   });
 });
 
-$("#clear").click(function(){
-  $("#monitor tbody").empty();
-});
-$("#clear_text").click(function(){
-  $("#logTable tbody").empty();
-  count=0;
-});
 let queue = [];
 let buf = new Uint8Array(4);
 let num_bytes = 1,now = 0;
 let moji = "";
 let new_line = true;
+$("#clear").click(function(){
+  $("#monitor tbody").empty();
+  new_line = true;
+});
+$("#clear_text").click(function(){
+  $("#logTable tbody").empty();
+  count=0;
+});
 chrome.serial.onReceive.addListener(function(info){
   let ary = new Uint8Array(info.data);
   let error = false;
-  if($("#newline").is(":checked") === true){
+  if($("#newline").is(":checked") === true && new_line === false){
     new_line = true;
     $("#monitor tbody").append("<br/>");
   }
@@ -192,13 +193,14 @@ chrome.serial.onReceive.addListener(function(info){
       }else{
         return;
       }
+      moji = "";
       //タイムスタンプの表示
-      if($("#timestamp").is(":checked") === true && new_line === true){
-        const date = new Date;
-        moji = date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"."+date.getMilliseconds()+" ｰ> ";
+      if(new_line === true){
         new_line = false
-      }else{
-        moji = "";
+        if($("#timestamp").is(":checked") === true){
+          const date = new Date;
+          moji += date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"."+date.getMilliseconds()+" ｰ> ";
+        }
       }
       moji += (new TextDecoder).decode(buf.slice(0,num_bytes));
       if(v===10){//改行
@@ -210,13 +212,14 @@ chrome.serial.onReceive.addListener(function(info){
         moji += "<nobr>&#013</nobr>";
       }
     }else{
+      moji = "";
       //タイムスタンプの表示
-      if($("#timestamp").is(":checked") === true && new_line === true){
-        const date = new Date;
-        moji = date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"."+date.getMilliseconds()+" ｰ> ";
+      if(new_line === true){
         new_line = false
-      }else{
-        moji = "";
+        if($("#timestamp").is(":checked") === true){
+          const date = new Date;
+          moji += date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"."+date.getMilliseconds()+" ｰ> ";
+        }
       }
       switch($("#display").val()){
         case "hex":
