@@ -64,9 +64,6 @@ $("#serial_send").click(function(){
   let start = 0,end = 0;
   //文字列をUint8Arrayに変換
   let data_char = (new TextEncoder).encode($("#send_data").val());
-  if(data_char.length === 0){
-    return;
-  }
   //入力フィールドをクリア
   if($("#clear_send").is(":checked") === true){
     document.getElementById("send_data").value = "";
@@ -85,6 +82,9 @@ $("#serial_send").click(function(){
   let buf = new Uint8Array(data_char.length + end - start);
   buf.set(data_char);
   buf.set(cr_lf.slice(start,end),data_char.length);
+  if(buf.length === 0){//入力がなく、改行コードだけでも送信する。
+    return;
+  }
   chrome.serial.send(connectionId, buf.buffer, function(){});
 });
 $("#send").click(function(){
@@ -148,6 +148,7 @@ let buf = new Uint8Array(4);
 let num_bytes = 1,now = 0;
 let moji = "";
 let new_line = true;
+let prev_t = 0;
 $("#clear").click(function(){
   $("#monitor tbody").empty();
   new_line = true;
@@ -159,7 +160,8 @@ $("#clear_text").click(function(){
 chrome.serial.onReceive.addListener(function(info){
   let ary = new Uint8Array(info.data);
   let error = false;
-  if($("#newline").is(":checked") === true && new_line === false){
+  //15ms間通信がなければ改行する。(時間はてきとう)
+  if($("#newline").is(":checked") === true && (performance.now() - prev_t) > 15 && new_line === false){
     new_line = true;
     $("#monitor tbody").append("<br/>");
   }
@@ -198,12 +200,11 @@ chrome.serial.onReceive.addListener(function(info){
       if(new_line === true){
         new_line = false
         if($("#timestamp").is(":checked") === true){
-          const date = new Date;
-          moji += date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"."+date.getMilliseconds()+" ｰ> ";
+          moji += makeTimestamp();
         }
       }
       moji += (new TextDecoder).decode(buf.slice(0,num_bytes));
-      if(v===10){//改行
+      if(v===10){//改行　LFを受信しないと改行できない。
         moji += "<br/>";
         new_line = true;
       }else if(v===9){//タブ
@@ -217,8 +218,7 @@ chrome.serial.onReceive.addListener(function(info){
       if(new_line === true){
         new_line = false
         if($("#timestamp").is(":checked") === true){
-          const date = new Date;
-          moji += date.getHours()+":"+date.getMinutes()+":"+date.getSeconds()+"."+date.getMilliseconds()+" ｰ> ";
+          moji += makeTimestamp();
         }
       }
       switch($("#display").val()){
@@ -264,8 +264,20 @@ chrome.serial.onReceive.addListener(function(info){
       rcv_data |= 0xffff0000;
     }
     $('#logTable tbody').prepend("<tr><td>"+ (++count) +"</td><td>"+rcv_id+"</td><td>"+rcv_cmd+"</td><td>"+rcv_data1+"</td><td>"+rcv_data2+"</td><td>"+rcv_data+"</td></tr>");
+    if($("#newline").is(":checked") === true && new_line === false){//シリアルモニタ改行
+      new_line = true;
+      $("#monitor tbody").append("<br/>");
+    }
   }
+  prev_t = performance.now();
 });
+function pad(num, digit){//0で埋めて桁をそろえる。
+  return ( '000' + num ).slice( -digit );
+}
+function makeTimestamp(){
+  const date = new Date;//タイムスタンプのテキストを作成。
+  return pad(date.getHours(),2)+":"+pad(date.getMinutes(),2)+":"+pad(date.getSeconds(),2)+"."+pad(date.getMilliseconds(),3)+" ｰ> "; 
+}
 
 //text以外での表示の時タイムスタンプの表示にはデータごとの改行が必要。
 function checkNewLine(){
