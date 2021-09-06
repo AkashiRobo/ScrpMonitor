@@ -40,10 +40,12 @@ ul.baud{
 }
 a.others{
   border: 2px solid white;
+  background-color: white;
   height: 28px;
 }
 a.highlight{
-  border: 2px solid red;
+  border: 2px solid pink;
+  background-color: pink;
   height: 28px;
 }#sendTable{
   border: 2px;
@@ -63,6 +65,16 @@ a.highlight{
   height:140px;
   width: 470px;
 }
+td.log{
+  padding: 0px;
+  width: 462px;
+  color: green;
+}
+td.attention{
+  padding: 0px;
+  width: 462px;
+  color: red;
+}
 input.send_data_input{
   height: 30px;
   width: 280px;
@@ -78,14 +90,6 @@ button.btn2{
 button.btn3{
   height: 30px;
 }
-div.serialMonitor{
-  z-index: 10;
-  position:absolute;
-  width:470px;
-  height:140px;
-  top:110px;
-  left:290px;
-}
 div.scroll_button{
   position: absolute;
   width:135px;
@@ -93,28 +97,36 @@ div.scroll_button{
   top:265px;
   left:625px;
 }
-div.serial_sender{
-  z-index: 15;
-  position: absolute;
-  width:300px;
-  height:20px;
-  top:47px;
-  left:430px;
+div.serialMonitor{
+  z-index: 1;
+  position:absolute;
+  width:470px;
+  height:140px;
+  top:110px;
+  left:290px;
 }
 div.line_button{
-  z-index: 12;
+  z-index: 2;
   position: absolute;
   width: 200px;
   height: 20px;
   top: 90px;
   left: 575px;
 }
+div.serial_sender{
+  z-index: 3;
+  position: absolute;
+  width:300px;
+  height:20px;
+  top:47px;
+  left:430px;
+}
 div.clear_button{
-  z-index: 20;
+  z-index: 4;
   position: absolute;
   width: 200px;
   height: 40px;
-  top: 36px;
+  top: 11px;
   left: 530px;
 }
 /*リスト*/

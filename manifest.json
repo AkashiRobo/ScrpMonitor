@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "ScrpMonitor_v2",
-  "description": "シリアル通信します。マイコン側でscrp_slaveのライブラリを使う必要があります。",
-  "version": "2.3",
+  "description": "汎用シリアル通信と、ScrpSlaveフォーマットでの通信ができます。マイコン側でscrp_slaveのライブラリを使う必要があります。",
+  "version": "2.4",
   "app": {
     "background": {
       "scripts": ["background.js"]

@@ -1,19 +1,15 @@
 $( document ).ready( function() {
-  let tbody = $( "tbody" );
-  let offsetWidth = tbody.prop( "offsetWidth" );
-  let scrollWidth = tbody.prop( "scrollWidth" );
-  let scrollbarWidth = offsetWidth - scrollWidth;
-  let thead = $( "thead" );
-  thead.width( thead.width() - scrollbarWidth );
   hideshowcol();
   updateDevices();
   setBaud();
-  $("#115200").removeClass("others").addClass("highlight");
   $("#scroll_v").prop("checked",true);
   $("#scroll_h").prop("checked",true);
   $("#clear_send").prop("checked",true);
   $("#cr").prop("checked",true);
   $("#lf").prop("checked",true);
+  $("#display_log").prop("checked", true);
+  $("#timestamp").prop("checked", true);
+  $("#newline").prop("checked", true);
   $("#send").attr("disabled", true);
   $("#serial_send").attr("disabled", true);
 });
@@ -59,11 +55,32 @@ $("#connect").click(function(){
     }
   }
 });
+//シリアルモニタにテキストを表示する関数。
+function addtext(text){
+  $("#monitor tbody").append(text);
+  //自動スクロール
+  const obj = document.getElementById("monitor_data");
+  if($("#scroll_v").is(":checked") === true){
+    obj.scrollTop = obj.scrollHeight;
+  }
+  if($("#scroll_h").is(":checked") === true){
+    obj.scrollLeft = obj.scrollWidth;
+  }
+}
+//シリアル送信の入力欄上でエンターキーを押すだけで、送信ボタンをクリックした扱いになる。
+$("#send_data").keyup(function(event) {
+    if (event.keyCode === 13 && connecting === true) {
+        $("#serial_send").click();
+    }
+});
+let value = "";
 $("#serial_send").click(function(){
   const cr_lf = new Uint8Array([0x0d,0x0a,0x00])
   let start = 0,end = 0;
+  value = $("#send_data").val();
   //文字列をUint8Arrayに変換
-  let data_char = (new TextEncoder).encode($("#send_data").val());
+  const encoder = new TextEncoder;
+  let data_char = encoder.encode(value);
   //入力フィールドをクリア
   if($("#clear_send").is(":checked") === true){
     document.getElementById("send_data").value = "";
@@ -85,8 +102,32 @@ $("#serial_send").click(function(){
   if(buf.length === 0){//入力がなく、改行コードだけでも送信する。
     return;
   }
-  chrome.serial.send(connectionId, buf.buffer, function(){});
+  chrome.serial.send(connectionId, buf.buffer, function(){
+    //送信ログ表示
+    if($("#display_log").is(":checked") === true){
+      let log = "<td class=\"log\">";
+      if($("#timestamp").is(":checked") === true){ 
+        log += makeTimestamp();
+      }
+      log += (value+"</td>");
+      addtext(log);
+      addtext("<nobr/>");
+    }
+  });
 });
+
+//データ入力欄上でエンターキーを押せば、送信できる。
+function click_send(event){
+  if (event.keyCode === 13 && connecting === true) {
+    $("#send").click();
+  }
+}
+$("#id").keyup(click_send);
+$("#cmd").keyup(click_send);
+$("#data1").keyup(click_send);
+$("#data2").keyup(click_send);
+$("#data").keyup(click_send);
+
 $("#send").click(function(){
   const dmy = 0xff;
   const stx = 0x41;
@@ -96,23 +137,23 @@ $("#send").click(function(){
   if($("#broadcast").is(":checked") === true){
     id = 0xff;
   }else{
-    id = parseInt($("#id").val());
+    id = parseInt($("#id").val(), 19) & 0xff;
   }
   if($("#emergency").is(":checked") === true){
     cmd = 0xff;
   }else{
-    cmd = parseInt($("#cmd").val());
+    cmd = parseInt($("#cmd").val(), 10) & 0xff;
   }
   if($("#separate_data").is(":checked") === true){
     if($("#random1").is(":checked") === true){
       data1 = (Math.random() * 256) & 0xff;
     }else{
-      data1 = parseInt($("#data1").val()) & 0xff;
+      data1 = parseInt($("#data1").val(), 10) & 0xff;
     }
     if($("#random2").is(":checked") === true){
       data2 = (Math.random() * 256) & 0xff;
     }else{
-      data2 = parseInt($("#data2").val()) & 0xff;
+      data2 = parseInt($("#data2").val(), 10) & 0xff;
     }
     data  = (data1 & 0xff) + (data2 << 8);
     if($("#sign_set").is(":checked") === false && (data2 >>> 7) === 1){//負の数表現
@@ -122,7 +163,7 @@ $("#send").click(function(){
     if($("#random").is(":checked") === true){
       data = (Math.random() * 65536 - 32768) & 0xffffffff;
     }else{
-      data = parseInt($("#data").val());
+      data = parseInt($("#data").val(), 10);
     }
     data1 = data & 0xff;
     data2 = (data >>> 8) & 0xff;
@@ -163,7 +204,7 @@ chrome.serial.onReceive.addListener(function(info){
   //15ms間通信がなければ改行する。(時間はてきとう)
   if($("#newline").is(":checked") === true && (performance.now() - prev_t) > 15 && new_line === false){
     new_line = true;
-    $("#monitor tbody").append("<br/>");
+    addtext("<br/>");
   }
   $.each(ary, function(i, v){
     queue.push(v);//vに受信データが入っている。
@@ -182,7 +223,7 @@ chrome.serial.onReceive.addListener(function(info){
         }else{//その他　ASCII
           num_bytes = 1;
         }
-      }else{//２バイト目以降
+      }else{//2バイト目以降
         buf[now] = v;
         if(v >>> 6 === 0b10){
           now++;
@@ -203,7 +244,8 @@ chrome.serial.onReceive.addListener(function(info){
           moji += makeTimestamp();
         }
       }
-      moji += (new TextDecoder).decode(buf.slice(0,num_bytes));
+      const decoder = new TextDecoder;
+      moji += decoder.decode(buf.slice(0,num_bytes));
       if(v===10){//改行　LFを受信しないと改行できない。
         moji += "<br/>";
         new_line = true;
@@ -236,15 +278,7 @@ chrome.serial.onReceive.addListener(function(info){
           break;
       }
     }
-    $("#monitor tbody").append(moji);
-    //自動スクロール
-    let obj = document.getElementById("monitor_data");
-    if($("#scroll_v").is(":checked") === true){
-      obj.scrollTop = obj.scrollHeight;
-    }
-    if($("#scroll_h").is(":checked") === true){
-      obj.scrollLeft = obj.scrollWidth;
-    }
+    addtext(moji);
   });
   while(6 <= queue.length){
     if(queue.shift() != 0x41){
@@ -266,7 +300,7 @@ chrome.serial.onReceive.addListener(function(info){
     $('#logTable tbody').prepend("<tr><td>"+ (++count) +"</td><td>"+rcv_id+"</td><td>"+rcv_cmd+"</td><td>"+rcv_data1+"</td><td>"+rcv_data2+"</td><td>"+rcv_data+"</td></tr>");
     if($("#newline").is(":checked") === true && new_line === false){//シリアルモニタ改行
       new_line = true;
-      $("#monitor tbody").append("<br/>");
+      addtext("<br/>");
     }
   }
   prev_t = performance.now();
@@ -371,27 +405,53 @@ $("#serialports_button").click(function(){
     }
   },10);
 });
+//ボーレートの配列　1200以下は動かないので消去
+let baud_array = [921600, 460800, 230400, 115200, 57600, 38400, 19200, 14400, 9600, 4800, 2400];
 function setBaud(){
-  //ボーレートの配列　1200以下は何か動かないので消去
-  let baud_array = [921600, 460800, 230400, 115200, 57600, 38400, 19200, 14400, 9600, 4800, 2400];
+  $("#baudrate").empty();
   baud_array.forEach(function(item){
     $("#baudrate").append("<li role=\"presentation\"><a class=\"others\" role=\"menuitem\" tabindex=\"-1\" href=\"#\" id=\"" + item + "\" data-value=\"" + item + "\">" + item + "</a></li>");
     $(document).on("click", "#"+item, function(){
       $(this).parents('.dropdown').find('.dropdown-toggle').html($(this).text() + ' <span class="caret"></span>');
-      //選択されている要素をハイライトする
+      //選択を解除した要素のハイライトを削除する。
       $("#"+baudrate).removeClass("highlight").addClass("others");
       baudrate = item;
+      //選択されている要素をハイライトする。
       $("#"+baudrate).removeClass("others").addClass("highlight");
       //選択した要素へスクロール
-      let obj = document.getElementById("baudrate");
+      const obj = document.getElementById("baudrate");
       let element = $("#"+baudrate).offset();
       let list = $("#baudrate").offset();
       obj.scrollBy(0,element.top - list.top - 30);
       $(this).parents('.dropdown').find('input[name="dropdown-value"]').val($(this).attr("data-value"));
     });
   });
+  //選択されている要素をハイライトする。
+  $("#"+baudrate).removeClass("others").addClass("highlight");
 }
 $("#baudrate_button").click(function(){
+  if($("#send_data").val() != ""){//ボーレート選択肢の追加 シリアル送信の入力欄に baudrate:1200 のように書いて追加したいボーレートを指定した状態で、ボーレートの選択ボタンをクリックする
+    let value = $("#send_data").val();
+    if(value.indexOf("baudrate:") === 0){
+      let newrate = value.slice(9,value.length);
+      let addrate = parseInt(newrate, 10);
+      if(isNaN(addrate) === false){
+        let text = "<td class=\"attention\">" + "新しいボーレート ( " + newrate + " bps ) が追加されました。" +"</td>";
+        addtext(text);
+        addtext("<nobr/>");
+        document.getElementById("send_data").value = "";
+        for(let i = 0;i <= baud_array.length;i++){
+          if(i === baud_array.length || baud_array[i] < addrate){
+            baud_array.splice(i, 0, addrate);
+            break;
+          }else if(baud_array[i] === addrate){
+            break;
+          }
+        }
+        setBaud();
+      }
+    }
+  }
   setTimeout(function(){
     //選択した要素へスクロール
     let obj = document.getElementById("baudrate");
