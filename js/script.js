@@ -137,7 +137,7 @@ $("#send").click(function(){
   if($("#broadcast").is(":checked") === true){
     id = 0xff;
   }else{
-    id = parseInt($("#id").val(), 19) & 0xff;
+    id = parseInt($("#id").val(), 10) & 0xff;
   }
   if($("#emergency").is(":checked") === true){
     cmd = 0xff;
